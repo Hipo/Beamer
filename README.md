@@ -4,19 +4,19 @@
 
 ## Requirements
 
-    * iOS 9+
-    * Swift 4
+    iOS 9+
+    Swift 4
 
 ## Key Features
 
-    * Supports background uploads.
-    * Saves upload status of each file, internally.
-    * Operation based requests
-    * Block based implementation
-    * Extensive notification support for operation status
-    * Cancallable operations
-    * Supports multiple asynchronous uploads 
-    * Protocol based upload tasks and network manager
+    Supports background uploads.
+    Saves upload status of each file, internally
+    Operation based requests
+    Block based implementation
+    Extensive notification support for operation status
+    Cancellable operations
+    Supports multiple asynchronous uploads
+    Protocol based upload tasks and network manager
 
 ## Quickstart
 
