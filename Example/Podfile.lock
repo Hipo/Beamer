@@ -1,0 +1,16 @@
+PODS:
+  - Beamer (0.1.0)
+
+DEPENDENCIES:
+  - Beamer (from `../`)
+
+EXTERNAL SOURCES:
+  Beamer:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Beamer: 04eab1ad0a077ebe0570992b83efaa764b5fb98d
+
+PODFILE CHECKSUM: 4b3bf3aca4bdc3977778417bd106fda0bb2b92cf
+
+COCOAPODS: 1.5.3

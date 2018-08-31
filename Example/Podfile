@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'Beamer_Example' do
+  pod 'Beamer', :path => '../'
+
+  target 'Beamer_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
