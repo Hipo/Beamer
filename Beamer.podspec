@@ -18,4 +18,6 @@ Pod::Spec.new do |s|
     s.swift_version = '4.0'
     
     s.source_files = 'Beamer/Classes/*.swift'
+    
+    s.dependency 'AWSS3'
 end

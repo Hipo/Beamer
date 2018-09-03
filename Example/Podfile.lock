@@ -1,15 +1,26 @@
 PODS:
-  - Beamer (0.1.0)
+  - AWSCore (2.6.25)
+  - AWSS3 (2.6.25):
+    - AWSCore (= 2.6.25)
+  - Beamer (0.1.0):
+    - AWSS3
 
 DEPENDENCIES:
   - Beamer (from `../`)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AWSCore
+    - AWSS3
 
 EXTERNAL SOURCES:
   Beamer:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Beamer: 04eab1ad0a077ebe0570992b83efaa764b5fb98d
+  AWSCore: 93ac57c361f6ff9c0749adf9404c4a1a1ecdaa2b
+  AWSS3: 0614ff4e0f0d11942322b5a15c30927a93fe35db
+  Beamer: 1b1752ae62f75a7460a28db7384afc5991e4945d
 
 PODFILE CHECKSUM: 4b3bf3aca4bdc3977778417bd106fda0bb2b92cf
 
