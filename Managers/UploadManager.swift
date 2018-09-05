@@ -16,6 +16,7 @@ public enum UploadManagerState {
 public class UploadManager {
     let awsClient: AWSClient
     var state: UploadManagerState
+    private var tasks: [UploadTask] = []
     
     init(awsClient: AWSClient) {
         self.awsClient = awsClient
@@ -24,4 +25,17 @@ public class UploadManager {
     
     
     //MARK: - API
+    public func start() {
+        if state == .running {
+            return
+        }
+        
+        if state == .suspended {
+            //Retry
+        }
+        
+        state = .running
+        
+        
+    }
 }

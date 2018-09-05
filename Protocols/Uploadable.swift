@@ -1,4 +1,4 @@
 public protocol Uploadable {
-    let identifier: String
-    let fileExtension: String
+    var identifier: String { get }
+    var fileExtension: String { get }
 }
