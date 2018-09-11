@@ -100,24 +100,22 @@ Beamer.shared.add(uploadTask: uploadTask)
 
 ### Observation
 
-Beamer currently supports only **Observer** to get information about uploads. 
-
-You can observe upload informations with adding observers. Firstly, you need to conform `BeamerObserver` protocol. Then add it to Beamer.
+You can get upload information by adding observers. Firstly, you need to conform `BeamerObserver` protocol. Then add it to Beamer.
 
 ```swift
 Beamer.shared.addObserver(self)
 ```
 
-You can gather informations
+You will get callbacks
 
-* When upload starts;
+* When upload task starts:
 
 ```swift
 func beamer(_ beamer: Beamer, 
             didStart uploadTask: UploadTask)
 ```
 
-* When upload progress changed
+* When upload progress changes:
 
 ```swift
 func beamer(_ beamer: Beamer, 
@@ -125,14 +123,14 @@ func beamer(_ beamer: Beamer,
             uploadTask: UploadTask)
 ```
 
-* When upload task completed
+* When an upload task is completed:
 
 ```swift
 func beamer(_ beamer: Beamer, 
             didFinish uploadTask: UploadTask)
 ```
 
-* When upload task failed with error
+* When an upload task fails:
 
 ```swift
 func beamer(_ beamer: Beamer, 
