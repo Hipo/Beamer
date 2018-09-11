@@ -98,7 +98,53 @@ After setting up, you can upload item wherever you are.
 Beamer.shared.add(uploadTask: uploadTask)
 ```
 
-### Delegates / Observers / Notifications
+### Observation
+
+Beamer currently supports only **Observer** to get information about uploads. 
+
+You can observe upload informations with adding observers. Firstly, you need to conform `BeamerObserver` protocol. Then add it to Beamer.
+
+```swift
+Beamer.shared.addObserver(self)
+```
+
+You can gather informations
+
+* When upload starts;
+
+```swift
+func beamer(_ beamer: Beamer, 
+            didStart uploadTask: UploadTask)
+```
+
+* When upload progress changed
+
+```swift
+func beamer(_ beamer: Beamer, 
+            didUpdate progress: Float,
+            uploadTask: UploadTask)
+```
+
+* When upload task completed
+
+```swift
+func beamer(_ beamer: Beamer, 
+            didFinish uploadTask: UploadTask)
+```
+
+* When upload task failed with error
+
+```swift
+func beamer(_ beamer: Beamer, 
+            didFail uploadTask: UploadTask, 
+            error: Error)
+```
+
+You can easily remove your observer from Beamer with
+
+```swift
+Beamer.shared.removeObserver(self)
+```
 
 ## Credits
 
