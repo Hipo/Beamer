@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
     s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.0' }
     s.swift_version = '4.0'
     
-    s.source_files = 'Beamer/Classes/*.swift'
+    s.source_files = 'Beamer/Classes/**/*.swift'
     
     s.dependency 'AWSS3'
 end

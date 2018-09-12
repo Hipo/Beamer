@@ -7,8 +7,8 @@
 
 import Foundation
 
-public class UploadTask {
-    enum State {
+public class UploadTask: Codable {
+    enum State: String, Codable {
         case ready
         case running
         case failed
@@ -18,10 +18,11 @@ public class UploadTask {
     let file: Uploadable
     var identifier: Int?
     var state: State = .ready
-
+    
     var directoryName: String?
     var fileName: String?
     var progress: Float = 0.0
+    var credential: AWSCredential?
     
     init(file: Uploadable, identifier: Int) {
         self.file = file
@@ -30,13 +31,4 @@ public class UploadTask {
     
     //MARK: - API
     
-    public func deleteSavedFile() {
-        guard let fileName = self.fileName,
-            let directoryName = self.directoryName,
-            let url = FileManager.default.fileUrl(with: fileName, inDirectory: directoryName) else {
-                return
-        }
-        
-        try? FileManager.default.removeItem(at: url)
-    }
 }

@@ -33,4 +33,27 @@ extension FileManager {
     private func userDocumentDirectory() -> URL? {
         return urls(for: .documentDirectory, in: .userDomainMask).first
     }
+    
+    func createSavedDirectoryIfNotExists(directoryName: String) -> Bool {
+        guard
+            let directoryUrl = directoryUrl(with: directoryName) else {
+                return false
+        }
+        
+        var isDirectory = ObjCBool(true)
+        
+        if fileExists(atPath: directoryUrl.path, isDirectory: &isDirectory) {
+            return true
+        }
+        
+        do {
+            try createDirectory(at: directoryUrl, withIntermediateDirectories: true, attributes: nil)
+        } catch {
+            return false
+        }
+        
+        return true
+    }
 }
+
+
