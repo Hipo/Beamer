@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class UploadTask: Codable {
+class UploadTask: Codable {
     enum State: String, Codable {
         case ready
         case running
@@ -16,11 +16,11 @@ public class UploadTask: Codable {
     }
     
     let file: Uploadable
-    var identifier: Int?
+    let identifier: Int
     var state: State = .ready
     
-    var directoryName: String?
-    var fileName: String?
+    private var directoryName: String?
+    private var fileName: String?
     var progress: Float = 0.0
     var credential: AWSCredential?
     

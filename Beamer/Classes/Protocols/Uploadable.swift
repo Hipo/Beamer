@@ -9,4 +9,5 @@ public struct Uploadable: Codable {
     var identifier: String
     var fileExtension: String
     var data: Data
+    var credential: AWSCredential?
 }

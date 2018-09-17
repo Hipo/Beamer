@@ -9,13 +9,13 @@ import Foundation
 
 public protocol BeamerObserver: class {
     func beamer(_ beamer: Beamer,
-                didStart uploadTask: UploadTask)
+                didStart uploadFile: Uploadable)
     func beamer(_ beamer: Beamer,
                 didUpdate progress: Float,
-                uploadTask: UploadTask)
+                uploadFile: Uploadable)
     func beamer(_ beamer: Beamer,
-                didFinish uploadTask: UploadTask)
+                didFinish uploadFile: Uploadable)
     func beamer(_ beamer: Beamer,
-                didFail uploadTask: UploadTask,
+                didFail uploadFile: Uploadable,
                 error: Error)
 }

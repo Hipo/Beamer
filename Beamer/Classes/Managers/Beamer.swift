@@ -18,7 +18,7 @@ public class Beamer: NSObject {
     private(set) var state: BeamerState
     private var observations = [ObjectIdentifier: BeamerObserver]()
     private var tasks: [UploadTask] = []
-    private var awsCredential: AWSCredential?
+    private(set) var awsCredential: AWSCredential?
     
     private override init() {
         state = .ready
@@ -52,6 +52,7 @@ public class Beamer: NSObject {
                             handleEventsForBackgroundURLSession identifier: String,
                             completionHandler: @escaping () -> Void) {
         //TODO: - Add AWS method here
+        
     }
     
     public func register(awsCredential: AWSCredential) {
@@ -62,8 +63,12 @@ public class Beamer: NSObject {
         self.awsCredential = awsCredential
     }
     
-    public func add(upladTask: UploadTask) {
+    public func add(uploadable: Uploadable, identifier: Int) {
         //TODO
+        let uploadTask = UploadTask(file: uploadable,
+                                    identifier: identifier)
+        
+        tasks.append(uploadTask)
     }
     
     public func resetUploads() {
@@ -81,6 +86,7 @@ public class Beamer: NSObject {
         observations.removeValue(forKey: identifier)
     }
 }
+
 
 
 
