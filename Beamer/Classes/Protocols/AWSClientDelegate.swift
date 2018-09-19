@@ -5,7 +5,7 @@
 //  Created by Omer Emre Aslan on 17.09.2018.
 //
 
-public protocol AWSClientDelegate: class {
+protocol AWSClientDelegate: class {
     func awsClient(_ awsClient: AWSClient,
                    didUploadCompleteFor uploadFile: Uploadable)
     func awsClient(_ awsClient: AWSClient,

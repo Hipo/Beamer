@@ -91,6 +91,22 @@ class AWSClient {
             return
         }
         
+        let authenticatedIdentityProvider = AuthenticatedIdentityProvider(awsCredential: awsCredential)
+        
+        let credentialsProvider = AWSCognitoCredentialsProvider(regionType: awsCredential.regionType,
+                                                                identityProvider: authenticatedIdentityProvider)
+        
+        guard let configuration = AWSServiceConfiguration(
+            region: awsCredential.regionType,
+            credentialsProvider: credentialsProvider) else {
+                return
+        }
+        
+        AWSS3TransferUtility.register(with: configuration,
+                                      forKey: self.registrationKey)
+        
+        transferUtility = AWSS3TransferUtility.s3TransferUtility(forKey: self.registrationKey)
+        
     }
     
     private func findUploadTask(byTransferUtilityTask utilityTask: AWSS3TransferUtilityTask) -> UploadTask? {
@@ -106,15 +122,39 @@ class AWSClient {
     //MARK: - API
     
     func add(uploadTask: UploadTask) {
-        
+        uploadTasks.append(uploadTask)
     }
     
-    func invalidateAwsCredentials() {
+    func invalidate() {
+        cancelAllUploads()
+        uploadTasks.removeAll()
+        releaseTransferUtility()
+        invalidateCredential()
+    }
+    
+    private func cancelAllUploads() {
+        guard let transferUtility = self.transferUtility else {
+            return
+        }
+        
+        transferUtility.enumerateToAssignBlocks(
+            forUploadTask: { (uploadTask, uploadProgressBlockReference, completionHandlerReference) in
+                uploadTask.cancel()
+        }, downloadTask: nil)
+    }
+    
+    private func invalidateCredential() {
         guard let transferUtility = self.transferUtility else {
             return
         }
         
         transferUtility.configuration.credentialsProvider.invalidateCachedTemporaryCredentials()
+    }
+    
+    private func releaseTransferUtility() {
+        AWSS3TransferUtility.remove(forKey: self.registrationKey)
+        
+        transferUtility = nil
     }
     
 }
