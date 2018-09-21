@@ -121,9 +121,84 @@ class AWSClient {
     
     //MARK: - API
     
-    func add(uploadTask: UploadTask) {
-        uploadTasks.append(uploadTask)
+    func uploadTask(_ uploadTask: UploadTask) {
+        guard let transferUtility = self.transferUtility else {
+            self.prepareTransferUtility(for: uploadTask)
+            self.uploadFile(uploadTask: uploadTask)
+            return
+        }
+        
+        transferUtility.getUploadTasks().continueWith { (tasks) -> Any? in
+            if tasks.result == nil || tasks.result?.count == 0 {
+                self.releaseTransferUtility()
+                
+                let deadlineTime = DispatchTime.now() + 0.5
+                DispatchQueue.main.asyncAfter(deadline: deadlineTime) {
+                    self.prepareTransferUtility(for: uploadTask)
+                    self.uploadFile(uploadTask: uploadTask)
+                }
+                
+                return nil
+            }
+            self.uploadFile(uploadTask: uploadTask)
+        }
     }
+    
+    func uploadFile(uploadTask: UploadTask) {
+        let uploadExpression = AWSS3TransferUtilityUploadExpression()
+        uploadExpression.progressBlock = self.progressBlock
+        
+        guard let awsCredential = Beamer.shared.awsCredential,
+            let transferUtility = self.transferUtility else {
+            return
+        }
+        
+        let key = awsCredential.permission.uploadPath.appending(uploadTask.file.fileExtension)
+        
+        transferUtility.uploadData(
+            uploadTask.file.data,
+            bucket: awsCredential.permission.bucketName,
+            key: key,
+            contentType: "video/mp4",
+            expression: uploadExpression,
+            completionHandler: self.uploadCompletionBlock)
+            .continueWith { (task) -> Any? in
+                if let error = task.error {
+                    DispatchQueue.main.async {
+                        guard let delegate = self.delegate else {
+                            return
+                        }
+                        
+                        delegate.awsClient(self,
+                                           didUploadFailFor: uploadTask.file,
+                                           error: error)
+                    }
+                    
+                    return nil
+                }
+                
+                self.uploadTasks.append(uploadTask)
+                
+                return nil
+        }
+    }
+    
+    func cancel(uploadTask: UploadTask) {
+        guard let transferUtility = self.transferUtility else {
+            return
+        }
+        
+        transferUtility.enumerateToAssignBlocks(
+            forUploadTask: { (task, uploadProgressBlockReference, completionHandlerReference) in
+                if task.taskIdentifier == uploadTask.identifier {
+                    task.cancel()
+                    self.uploadTasks.remove(at: self.indexOf(uploadTask: uploadTask))
+                    
+                    return
+                }
+        }, downloadTask: nil)
+    }
+    
     
     func invalidate() {
         cancelAllUploads()
