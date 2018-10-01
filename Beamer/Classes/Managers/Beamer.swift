@@ -24,7 +24,6 @@ public class Beamer: NSObject {
         state = .ready
     }
     
-    //MARK: - API
     private func start() {
         if state == .running {
             return
@@ -38,12 +37,77 @@ public class Beamer: NSObject {
     }
     
     private func saveUploadTasks() {
-        //TODO
+        guard let metaPath = FileManager.default.fileUrl(with: "uploadmeta.beamer"),
+            let uploadTaskPath = FileManager.default.fileUrl(with: "uploadtasks.beamer") else {
+            return
+        }
+        
+        var taskMetas = [UploadMeta]()
+        
+        for task in tasks {
+            guard let savePath = self.savePath(forUploadTask: task) else {
+                continue
+            }
+            
+            let identifier = task.file.identifier
+            
+            let taskMeta = UploadMeta(identifier: identifier,
+                                      path: savePath.absoluteString)
+            
+            taskMetas.append(taskMeta)
+            
+            save(uploadTask: task)
+        }
+        
+        let encoder = JSONEncoder()
+        do {
+            let metaData = try encoder.encode(taskMetas)
+            try metaData.write(to: metaPath, options: [])
+            
+            let tasksData = try encoder.encode(tasks)
+            try tasksData.write(to: uploadTaskPath,
+                                options: [])
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+    }
+    
+    private func save(uploadTask: UploadTask) {
+        guard let savePath = self.savePath(forUploadTask: uploadTask) else {
+            return
+        }
+        
+        let encoder = JSONEncoder()
+        do {
+            let data = try encoder.encode(uploadTask.file.data)
+            try data.write(to: savePath, options: [])
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+        
+    }
+    
+    private func savePath(forUploadTask uploadTask: UploadTask) -> URL? {
+        return FileManager.default.fileUrl(with: uploadTask.file.identifier)
     }
     
     private func loadUploadTasks() -> [UploadTask] {
-        //TODO
-        return []
+        guard let uploadTaskPath = FileManager.default.fileUrl(with: "uploadtasks.beamer") else {
+            return []
+        }
+        
+        var uploadTasks = [UploadTask]()
+        
+        let jsonDecoder = JSONDecoder()
+        
+        do {
+            let data = try Data(contentsOf: uploadTaskPath)
+            uploadTasks = try jsonDecoder.decode(Array<UploadTask>.self, from: data)
+            
+            return uploadTasks
+        } catch {
+            fatalError(error.localizedDescription)
+        }
     }
     
     //MARK: - API
