@@ -14,11 +14,12 @@ public enum BeamerState {
 }
 
 public class Beamer: NSObject {
-    static var shared: Beamer = Beamer()
+    public static var shared: Beamer = Beamer()
     private(set) var state: BeamerState
     private var observations = [ObjectIdentifier: BeamerObserver]()
     private var tasks: [UploadTask] = []
     private(set) var awsCredential: AWSCredential?
+    private(set) var taskIdentifier: Int = 1
     
     private override init() {
         state = .ready
@@ -133,6 +134,8 @@ public class Beamer: NSObject {
                                     identifier: identifier)
         
         tasks.append(uploadTask)
+        
+        taskIdentifier = taskIdentifier.advanced(by: 1)
     }
     
     public func resetUploads() {

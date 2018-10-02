@@ -7,18 +7,49 @@
 //
 
 import UIKit
+import Beamer
 
 class ViewController: UIViewController {
+    private var imagePickerController: UIImagePickerController?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        
+        imagePickerController = UIImagePickerController()
+        imagePickerController?.delegate = self
+        
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    @IBAction func tapPickImage(_ sender: UIButton) {
+        guard let imagePickerController = self.imagePickerController else {
+            return
+        }
+        
+        present(imagePickerController,
+                animated: true,
+                completion: nil)
     }
+    
+    func uniqueIdentifier() -> String {
+        return UUID().uuidString
+    }
+}
 
+extension ViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController,
+                               didFinishPickingMediaWithInfo info: [String : Any]) {
+        guard let image = info["UIImagePickerControllerOriginalImage"] as? UIImage,
+            let data = UIImagePNGRepresentation(image) else {
+            return
+        }
+        
+        let uploadableFile = Uploadable(
+            identifier: uniqueIdentifier(),
+            fileExtension: "png",
+            data: data)
+        
+        Beamer.shared.add(uploadable: uploadableFile, identifier: 1)
+        
+        
+    }
 }
 

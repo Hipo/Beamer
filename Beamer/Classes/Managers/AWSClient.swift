@@ -141,6 +141,8 @@ class AWSClient {
                 return nil
             }
             self.uploadFile(uploadTask: uploadTask)
+            
+            return nil
         }
     }
     
