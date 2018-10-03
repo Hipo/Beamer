@@ -41,7 +41,7 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
             let data = UIImagePNGRepresentation(image) else {
             return
         }
-        
+
         let uploadableFile = Uploadable(
             identifier: uniqueIdentifier(),
             fileExtension: "png",
@@ -50,6 +50,7 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
         Beamer.shared.add(uploadable: uploadableFile, identifier: 1)
         
         
+        picker.dismiss(animated: true, completion: nil)
     }
 }
 

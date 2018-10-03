@@ -6,9 +6,9 @@
 //
 
 public struct Uploadable: Codable {
-    var identifier: String
-    var fileExtension: String
-    var data: Data
+    let identifier: String
+    let fileExtension: String
+    let data: Data
     var credential: AWSCredential?
     
     public init(identifier: String,

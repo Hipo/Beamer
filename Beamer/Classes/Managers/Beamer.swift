@@ -38,6 +38,7 @@ public class Beamer: NSObject {
     }
     
     private func saveUploadTasks() {
+        print("saveUpload")
         guard let metaPath = FileManager.default.fileUrl(with: "uploadmeta.beamer"),
             let uploadTaskPath = FileManager.default.fileUrl(with: "uploadtasks.beamer") else {
             return
@@ -71,6 +72,9 @@ public class Beamer: NSObject {
         } catch {
             fatalError(error.localizedDescription)
         }
+        
+        
+        
     }
     
     private func save(uploadTask: UploadTask) {
@@ -80,7 +84,7 @@ public class Beamer: NSObject {
         
         let encoder = JSONEncoder()
         do {
-            let data = try encoder.encode(uploadTask.file.data)
+            let data = try encoder.encode(uploadTask)
             try data.write(to: savePath, options: [])
         } catch {
             fatalError(error.localizedDescription)
@@ -129,13 +133,17 @@ public class Beamer: NSObject {
     }
     
     public func add(uploadable: Uploadable, identifier: Int) {
-        //TODO
         let uploadTask = UploadTask(file: uploadable,
                                     identifier: identifier)
         
         tasks.append(uploadTask)
         
         taskIdentifier = taskIdentifier.advanced(by: 1)
+        
+        
+        saveUploadTasks()
+        
+        loadUploadTasks()
     }
     
     public func resetUploads() {
