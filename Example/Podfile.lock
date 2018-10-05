@@ -1,27 +1,35 @@
 PODS:
+  - Alamofire (4.7.3)
   - AWSCore (2.6.25)
   - AWSS3 (2.6.25):
     - AWSCore (= 2.6.25)
   - Beamer (0.1.0):
     - AWSS3
+  - SwiftyJSON (4.2.0)
 
 DEPENDENCIES:
+  - Alamofire
   - Beamer (from `../`)
+  - SwiftyJSON
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
+    - Alamofire
     - AWSCore
     - AWSS3
+    - SwiftyJSON
 
 EXTERNAL SOURCES:
   Beamer:
     :path: "../"
 
 SPEC CHECKSUMS:
+  Alamofire: c7287b6e5d7da964a70935e5db17046b7fde6568
   AWSCore: 93ac57c361f6ff9c0749adf9404c4a1a1ecdaa2b
   AWSS3: 0614ff4e0f0d11942322b5a15c30927a93fe35db
   Beamer: 8d971ae27109f169db84233214a3252d25d122af
+  SwiftyJSON: c4bcba26dd9ec7a027fc8eade48e2c911f229e96
 
-PODFILE CHECKSUM: 4b3bf3aca4bdc3977778417bd106fda0bb2b92cf
+PODFILE CHECKSUM: 150dfc251092d8ad12edd031c4c2d2a9fb5b5a5b
 
 COCOAPODS: 1.5.3

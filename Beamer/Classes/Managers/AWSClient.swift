@@ -80,7 +80,7 @@ class AWSClient {
             index = index.advanced(by: 1)
         }
         
-        if index == uploadTasks.count - 1 {
+        if index > uploadTasks.count - 1 {
             return -1
         }
         
@@ -146,7 +146,7 @@ class AWSClient {
         }
     }
     
-    func uploadFile(uploadTask: UploadTask) {
+    private func uploadFile(uploadTask: UploadTask) {
         let uploadExpression = AWSS3TransferUtilityUploadExpression()
         uploadExpression.progressBlock = self.progressBlock
         
@@ -161,7 +161,7 @@ class AWSClient {
             uploadTask.file.data,
             bucket: awsCredential.permission.bucketName,
             key: key,
-            contentType: "video/mp4",
+            contentType: "image/png",
             expression: uploadExpression,
             completionHandler: self.uploadCompletionBlock)
             .continueWith { (task) -> Any? in
@@ -201,7 +201,19 @@ class AWSClient {
         }, downloadTask: nil)
     }
     
-    
+    func restore() {
+        guard let transferUtility = self.transferUtility,
+            let uploadCompletion = self.uploadCompletionBlock,
+            let progressBlock = self.progressBlock else {
+            return
+        }
+        
+        transferUtility.enumerateToAssignBlocks(
+            forUploadTask: { (task, uploadProgressBlockReference, completionHandlerReference) in
+                task.setCompletionHandler(uploadCompletion)
+                task.setProgressBlock(progressBlock)
+        }, downloadTask: nil)
+    }
     func invalidate() {
         cancelAllUploads()
         uploadTasks.removeAll()

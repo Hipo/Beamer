@@ -8,12 +8,12 @@
 import AWSS3
 
 public struct AWSCredential: Codable {
-    var regionType: AWSRegionType
-    var permission: AWSCredentialPermission
-    var identityPoolID: String
-    var token: String
-    var identityID: String
-    var providerName: String
+    let regionType: AWSRegionType
+    let permission: AWSCredentialPermission
+    let identityPoolID: String
+    let token: String
+    let identityID: String
+    let providerName: String
     
     enum CodingKeys: CodingKey {
         case regionType
@@ -22,6 +22,20 @@ public struct AWSCredential: Codable {
         case token
         case identityID
         case providerName
+    }
+    
+    public init(regionType: AWSRegionType,
+                permission: AWSCredentialPermission,
+                identityPoolID: String,
+                token: String,
+                identityID: String,
+                providerName: String) {
+        self.regionType = regionType
+        self.permission = permission
+        self.identityPoolID = identityPoolID
+        self.token = token
+        self.identityID = identityID
+        self.providerName = providerName
     }
     
     public func encode(to encoder: Encoder) throws {

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AWSS3
 
 public enum BeamerState {
     case ready
@@ -14,15 +15,23 @@ public enum BeamerState {
 }
 
 public class Beamer: NSObject {
+    struct Observation {
+        weak var observer: BeamerObserver?
+    }
+    
     public static var shared: Beamer = Beamer()
     private(set) var state: BeamerState
-    private var observations = [ObjectIdentifier: BeamerObserver]()
+    private var observations = [ObjectIdentifier: Observation]()
     private var tasks: [UploadTask] = []
     private(set) var awsCredential: AWSCredential?
     private(set) var taskIdentifier: Int = 1
+    private var awsClient = AWSClient(registrationKey: "1613")
     
     private override init() {
         state = .ready
+        super.init()
+        
+        awsClient.delegate = self
     }
     
     private func start() {
@@ -32,13 +41,20 @@ public class Beamer: NSObject {
 
         if state == .suspended {
             //Retry
+            state = .running
+            
+            retry()
+            return
         }
 
         state = .running
     }
     
+    private func retry() {
+        
+    }
+    
     private func saveUploadTasks() {
-        print("saveUpload")
         guard let metaPath = FileManager.default.fileUrl(with: "uploadmeta.beamer"),
             let uploadTaskPath = FileManager.default.fileUrl(with: "uploadtasks.beamer") else {
             return
@@ -82,9 +98,8 @@ public class Beamer: NSObject {
             return
         }
         
-        let encoder = JSONEncoder()
         do {
-            let data = try encoder.encode(uploadTask)
+            let data = uploadTask.file.data
             try data.write(to: savePath, options: [])
         } catch {
             fatalError(error.localizedDescription)
@@ -120,8 +135,10 @@ public class Beamer: NSObject {
     public func application(_ application: UIApplication,
                             handleEventsForBackgroundURLSession identifier: String,
                             completionHandler: @escaping () -> Void) {
-        //TODO: - Add AWS method here
-        
+        AWSS3TransferUtility.interceptApplication(
+            application,
+            handleEventsForBackgroundURLSession: identifier,
+            completionHandler: completionHandler)
     }
     
     public func register(awsCredential: AWSCredential) {
@@ -130,20 +147,23 @@ public class Beamer: NSObject {
         }
         
         self.awsCredential = awsCredential
+        
+        self.start()
     }
     
-    public func add(uploadable: Uploadable, identifier: Int) {
+    public func register() {
+        self.start()
+    }
+    
+    public func add(uploadable: Uploadable) {
         let uploadTask = UploadTask(file: uploadable,
-                                    identifier: identifier)
+                                    identifier: taskIdentifier)
         
         tasks.append(uploadTask)
         
         taskIdentifier = taskIdentifier.advanced(by: 1)
         
-        
-        saveUploadTasks()
-        
-        loadUploadTasks()
+        awsClient.uploadTask(uploadTask)
     }
     
     public func resetUploads() {
@@ -153,7 +173,7 @@ public class Beamer: NSObject {
     //MARK: Observer
     public func addObserver(_ observer: BeamerObserver) {
         let identifier = ObjectIdentifier(observer)
-        observations[identifier] = observer
+        observations[identifier] = Observation(observer: observer)
     }
     
     public func removeObserver(_ observer: BeamerObserver) {
@@ -162,6 +182,49 @@ public class Beamer: NSObject {
     }
 }
 
-
-
-
+extension Beamer: AWSClientDelegate {
+    func awsClient(_ awsClient: AWSClient,
+                   didUploadCompleteFor uploadFile: Uploadable) {
+        for (id, observation) in observations {
+            guard let observer = observation.observer else {
+                observations.removeValue(forKey: id)
+                continue
+            }
+            
+            observer.beamer(self,
+                            didFinish: uploadFile)
+        }
+    }
+    
+    func awsClient(_ awsClient: AWSClient,
+                   didUploadFailFor uploadFile: Uploadable,
+                   error: Error) {
+        for (id, observation) in observations {
+            guard let observer = observation.observer else {
+                observations.removeValue(forKey: id)
+                continue
+            }
+            
+            observer.beamer(self,
+                            didFail: uploadFile,
+                            error: error)
+        }
+    }
+    
+    func awsClient(_ awsClient: AWSClient,
+                   didSendProgressFor uploadFile: Uploadable,
+                   progress: Float) {
+        for (id, observation) in observations {
+            guard let observer = observation.observer else {
+                observations.removeValue(forKey: id)
+                continue
+            }
+            
+            observer.beamer(self,
+                            didUpdate: progress,
+                            uploadFile: uploadFile)
+        }
+    }
+    
+    
+}

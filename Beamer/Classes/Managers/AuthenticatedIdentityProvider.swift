@@ -17,4 +17,10 @@ class AuthenticatedIdentityProvider: AWSCognitoCredentialsProviderHelper {
                    useEnhancedFlow: true,
                    identityProviderManager: nil)
     }
+    
+    override func token() -> AWSTask<NSString> {
+        self.identityId = awsCredential.identityID
+        
+        return AWSTask<NSString>(result: NSString(string: awsCredential.token))
+    }
 }

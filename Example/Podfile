@@ -2,6 +2,8 @@ use_frameworks!
 
 target 'Beamer_Example' do
   pod 'Beamer', :path => '../'
+  pod 'Alamofire'
+  pod 'SwiftyJSON'
 
   target 'Beamer_Tests' do
     inherit! :search_paths

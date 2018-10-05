@@ -8,7 +8,11 @@
 import AWSS3
 
 public struct AWSCredentialPermission: Codable {
-    var bucketName: String
-    var uploadPath: String
-    var regionName: String
+    let bucketName: String
+    let uploadPath: String
+    
+    public init(bucketName: String, uploadPath: String) {
+        self.bucketName = bucketName
+        self.uploadPath = uploadPath
+    }
 }

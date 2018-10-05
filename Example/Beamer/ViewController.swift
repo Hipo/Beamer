@@ -15,6 +15,16 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        Beamer.shared.addObserver(self)
+        
+        NetworkManager.init().fetchAWSCredential { (awsCredential, error) in
+            guard let credential = awsCredential else {
+                return
+            }
+            
+            Beamer.shared.register(awsCredential: credential)
+        }
+        
         imagePickerController = UIImagePickerController()
         imagePickerController?.delegate = self
         
@@ -47,10 +57,28 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
             fileExtension: "png",
             data: data)
         
-        Beamer.shared.add(uploadable: uploadableFile, identifier: 1)
+        Beamer.shared.add(uploadable: uploadableFile)
         
         
         picker.dismiss(animated: true, completion: nil)
     }
 }
 
+
+extension ViewController: BeamerObserver {
+    func beamer(_ beamer: Beamer, didStart uploadFile: Uploadable) {
+        print("didStart")
+    }
+    
+    func beamer(_ beamer: Beamer, didFinish uploadFile: Uploadable) {
+        print("didFinish")
+    }
+    
+    func beamer(_ beamer: Beamer, didFail uploadFile: Uploadable, error: Error) {
+        print("didFail \(error)")
+    }
+    
+    func beamer(_ beamer: Beamer, didUpdate progress: Float, uploadFile: Uploadable) {
+        print("didUpdate progress: \(progress)")
+    }
+}
