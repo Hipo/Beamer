@@ -14,24 +14,38 @@ public enum BeamerState {
     case suspended
 }
 
+struct Observation {
+    weak var observer: BeamerObserver?
+}
+
 public class Beamer: NSObject {
-    struct Observation {
-        weak var observer: BeamerObserver?
-    }
-    
-    public static var shared: Beamer = Beamer()
     private(set) var state: BeamerState
     private var observations = [ObjectIdentifier: Observation]()
     private var tasks: [UploadTask] = []
-    private(set) var awsCredential: AWSCredential?
-    private(set) var taskIdentifier: Int = 1
-    private var awsClient = AWSClient(registrationKey: "1613")
+    private var awsClient: AWSClient?
     
-    private override init() {
+    var awsCredential: AWSCredential?
+    weak var dataSource: BeamerDatasource?
+    
+    public init(awsCredential: AWSCredential? = nil) {
+        guard let dataSource = self.dataSource else {
+            fatalError("Datasource should be provided to use Beamer!")
+        }
+        
         state = .ready
+        
         super.init()
         
-        awsClient.delegate = self
+        guard let credential = awsCredential else {
+            return
+        }
+        
+        awsClient = AWSClient(awsCredential: credential)
+        
+        awsClient?.delegate = self
+        
+        let registrationKey = dataSource.registrationKey(self)
+        awsClient?.registrationKey = registrationKey
     }
     
     private func start() {
@@ -55,42 +69,22 @@ public class Beamer: NSObject {
     }
     
     private func saveUploadTasks() {
-        guard let metaPath = FileManager.default.fileUrl(with: "uploadmeta.beamer"),
-            let uploadTaskPath = FileManager.default.fileUrl(with: "uploadtasks.beamer") else {
+        guard let uploadTaskPath = FileManager.default.fileUrl(with: "com.beamer.upload.tasks") else {
             return
         }
         
-        var taskMetas = [UploadMeta]()
-        
         for task in tasks {
-            guard let savePath = self.savePath(forUploadTask: task) else {
-                continue
-            }
-            
-            let identifier = task.file.identifier
-            
-            let taskMeta = UploadMeta(identifier: identifier,
-                                      path: savePath.absoluteString)
-            
-            taskMetas.append(taskMeta)
-            
             save(uploadTask: task)
         }
         
         let encoder = JSONEncoder()
         do {
-            let metaData = try encoder.encode(taskMetas)
-            try metaData.write(to: metaPath, options: [])
-            
             let tasksData = try encoder.encode(tasks)
             try tasksData.write(to: uploadTaskPath,
                                 options: [])
         } catch {
             fatalError(error.localizedDescription)
-        }
-        
-        
-        
+        }        
     }
     
     private func save(uploadTask: UploadTask) {
@@ -111,8 +105,12 @@ public class Beamer: NSObject {
         return FileManager.default.fileUrl(with: uploadTask.file.identifier)
     }
     
+    private func savePath(forUploadableFile uploadableFile: UploadableFile) -> URL? {
+        return FileManager.default.fileUrl(with: uploadableFile.identifier)
+    }
+    
     private func loadUploadTasks() -> [UploadTask] {
-        guard let uploadTaskPath = FileManager.default.fileUrl(with: "uploadtasks.beamer") else {
+        guard let uploadTaskPath = FileManager.default.fileUrl(with: "com.beamer.upload.tasks") else {
             return []
         }
         
@@ -155,22 +153,28 @@ public class Beamer: NSObject {
         self.start()
     }
     
-    public func add(uploadable: Uploadable) {
-        let uploadTask = UploadTask(file: uploadable,
-                                    identifier: taskIdentifier)
+    public func add(uploadableFile: UploadableFile) {
+        guard let savePath = self.savePath(forUploadableFile: uploadableFile) else {
+            return
+        }
+        
+        let uploadTask = UploadTask(file: uploadableFile,
+                                    path: savePath.absoluteString)
         
         tasks.append(uploadTask)
         
-        taskIdentifier = taskIdentifier.advanced(by: 1)
-        
-        awsClient.uploadTask(uploadTask)
+        awsClient?.uploadTask(uploadTask)
     }
     
     public func resetUploads() {
         //TODO
     }
 
-    //MARK: Observer
+    
+}
+
+//MARK: - Observer
+extension Beamer {
     public func addObserver(_ observer: BeamerObserver) {
         let identifier = ObjectIdentifier(observer)
         observations[identifier] = Observation(observer: observer)
@@ -180,31 +184,33 @@ public class Beamer: NSObject {
         let identifier = ObjectIdentifier(observer)
         observations.removeValue(forKey: identifier)
     }
-}
-
-extension Beamer: AWSClientDelegate {
-    func awsClient(_ awsClient: AWSClient,
-                   didUploadCompleteFor uploadFile: Uploadable) {
+    
+    //MARK: Helper
+    fileprivate func executeBlockOnObservers(block: ((BeamerObserver)->Void)?) {
         for (id, observation) in observations {
             guard let observer = observation.observer else {
                 observations.removeValue(forKey: id)
                 continue
             }
             
+            block?(observer)
+        }
+    }
+}
+
+//MARK: - AWSClientDelegate
+extension Beamer: AWSClientDelegate {
+    func awsClient(_ awsClient: AWSClient,
+                   didCompleteUpload uploadFile: UploadableFile) {
+        executeBlockOnObservers { (observer) in
             observer.beamer(self,
                             didFinish: uploadFile)
         }
     }
-    
     func awsClient(_ awsClient: AWSClient,
-                   didUploadFailFor uploadFile: Uploadable,
+                   didFailUpload uploadFile: UploadableFile,
                    error: Error) {
-        for (id, observation) in observations {
-            guard let observer = observation.observer else {
-                observations.removeValue(forKey: id)
-                continue
-            }
-            
+        executeBlockOnObservers { (observer) in
             observer.beamer(self,
                             didFail: uploadFile,
                             error: error)
@@ -212,19 +218,12 @@ extension Beamer: AWSClientDelegate {
     }
     
     func awsClient(_ awsClient: AWSClient,
-                   didSendProgressFor uploadFile: Uploadable,
+                   didUpdateProgress uploadFile: UploadableFile,
                    progress: Float) {
-        for (id, observation) in observations {
-            guard let observer = observation.observer else {
-                observations.removeValue(forKey: id)
-                continue
-            }
-            
+        executeBlockOnObservers { (observer) in
             observer.beamer(self,
                             didUpdate: progress,
                             uploadFile: uploadFile)
         }
     }
-    
-    
 }

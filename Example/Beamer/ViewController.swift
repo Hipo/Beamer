@@ -11,18 +11,20 @@ import Beamer
 
 class ViewController: UIViewController {
     private var imagePickerController: UIImagePickerController?
+    
+    private var beamer: Beamer = Beamer(awsCredential: nil)
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        Beamer.shared.addObserver(self)
+        beamer.addObserver(self)
         
         NetworkManager.init().fetchAWSCredential { (awsCredential, error) in
             guard let credential = awsCredential else {
                 return
             }
             
-            Beamer.shared.register(awsCredential: credential)
+            self.beamer.register(awsCredential: credential)
         }
         
         imagePickerController = UIImagePickerController()
@@ -51,14 +53,12 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
             let data = UIImagePNGRepresentation(image) else {
             return
         }
-
-        let uploadableFile = Uploadable(
-            identifier: uniqueIdentifier(),
-            fileExtension: "png",
-            data: data)
         
-        Beamer.shared.add(uploadable: uploadableFile)
+        let uploadableFile = UploadableFile(identifier: uniqueIdentifier(),
+                                            data: data,
+                                            contentType: .image(type: "png"))
         
+        beamer.add(uploadableFile: uploadableFile)
         
         picker.dismiss(animated: true, completion: nil)
     }
@@ -66,19 +66,19 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
 
 
 extension ViewController: BeamerObserver {
-    func beamer(_ beamer: Beamer, didStart uploadFile: Uploadable) {
+    func beamer(_ beamer: Beamer, didStart uploadFile: UploadableFile) {
         print("didStart")
     }
     
-    func beamer(_ beamer: Beamer, didFinish uploadFile: Uploadable) {
+    func beamer(_ beamer: Beamer, didFinish uploadFile: UploadableFile) {
         print("didFinish")
     }
     
-    func beamer(_ beamer: Beamer, didFail uploadFile: Uploadable, error: Error) {
+    func beamer(_ beamer: Beamer, didFail uploadFile: UploadableFile, error: Error) {
         print("didFail \(error)")
     }
     
-    func beamer(_ beamer: Beamer, didUpdate progress: Float, uploadFile: Uploadable) {
+    func beamer(_ beamer: Beamer, didUpdate progress: Float, uploadFile: UploadableFile) {
         print("didUpdate progress: \(progress)")
     }
 }

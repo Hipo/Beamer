@@ -15,18 +15,15 @@ class UploadTask: Codable {
         case completed
     }
     
-    let file: Uploadable
-    let identifier: Int
+    let file: UploadableFile
     var state: State = .ready
-    
-    private var directoryName: String?
-    private var fileName: String?
-    var progress: Float = 0.0
+    let path: String
     var credential: AWSCredential?
+    var identifier: Int?
     
-    init(file: Uploadable, identifier: Int) {
+    init(file: UploadableFile, path: String) {
         self.file = file
-        self.identifier = identifier
+        self.path = path
     }
     
     //MARK: - API

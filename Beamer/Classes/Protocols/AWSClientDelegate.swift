@@ -7,11 +7,11 @@
 
 protocol AWSClientDelegate: class {
     func awsClient(_ awsClient: AWSClient,
-                   didUploadCompleteFor uploadFile: Uploadable)
+                   didCompleteUpload uploadFile: UploadableFile)
     func awsClient(_ awsClient: AWSClient,
-                   didUploadFailFor uploadFile: Uploadable,
+                   didFailUpload uploadFile: UploadableFile,
                    error: Error)
     func awsClient(_ awsClient: AWSClient,
-                   didSendProgressFor uploadFile: Uploadable,
+                   didUpdateProgress uploadFile: UploadableFile,
                    progress: Float)
 }

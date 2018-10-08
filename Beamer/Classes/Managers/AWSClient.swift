@@ -8,19 +8,17 @@
 import AWSS3
 
 class AWSClient {
-    var transferUtility: AWSS3TransferUtility?
-    
     private var progressBlock: AWSS3TransferUtilityProgressBlock?
     private var uploadCompletionBlock: AWSS3TransferUtilityUploadCompletionHandlerBlock?
+    private var awsCredential: AWSCredential?
     
     weak var delegate: AWSClientDelegate?
-    
-    private let registrationKey: String
-    
+    var registrationKey: String?
     var uploadTasks: [UploadTask] = []
+    var transferUtility: AWSS3TransferUtility?
     
-    init(registrationKey: String) {
-        self.registrationKey = registrationKey
+    init(awsCredential: AWSCredential?) {
+        self.awsCredential = awsCredential
         
         progressBlock = { task, progress in
             guard let uploadTask = self.findUploadTask(byTransferUtilityTask: task) else {
@@ -29,15 +27,13 @@ class AWSClient {
             
             let progress = Float(progress.completedUnitCount) / Float(progress.totalUnitCount)
             
-            uploadTask.progress = progress
-            
             guard let delegate = self.delegate else {
                 return
             }
             
             DispatchQueue.main.async {
                 delegate.awsClient(self,
-                                   didSendProgressFor: uploadTask.file,
+                                   didUpdateProgress: uploadTask.file,
                                    progress: progress)
             }
         }
@@ -58,14 +54,13 @@ class AWSClient {
             
             guard let error = error else {
                 delegate.awsClient(self,
-                                   didUploadCompleteFor: uploadTask.file)
+                                   didCompleteUpload: uploadTask.file)
                 return
             }
             
             delegate.awsClient(self,
-                               didUploadFailFor: uploadTask.file,
+                               didFailUpload: uploadTask.file,
                                error: error)
-            
         }
     }
     
@@ -87,7 +82,8 @@ class AWSClient {
         return index
     }
     private func prepareTransferUtility(for uploadTask: UploadTask) {
-        guard let awsCredential = Beamer.shared.awsCredential else {
+        guard let awsCredential = self.awsCredential,
+            let registrationKey = self.registrationKey else {
             return
         }
         
@@ -103,20 +99,24 @@ class AWSClient {
         }
         
         AWSS3TransferUtility.register(with: configuration,
-                                      forKey: self.registrationKey)
+                                      forKey: registrationKey)
         
-        transferUtility = AWSS3TransferUtility.s3TransferUtility(forKey: self.registrationKey)
+        transferUtility = AWSS3TransferUtility.s3TransferUtility(forKey: registrationKey)
         
     }
     
     private func findUploadTask(byTransferUtilityTask utilityTask: AWSS3TransferUtilityTask) -> UploadTask? {
         for uploadTask in uploadTasks {
-            if uploadTask.identifier == utilityTask.taskIdentifier {
+            if self.key(from: uploadTask) == utilityTask.key {
                 return uploadTask
             }
         }
         
         return nil
+    }
+    
+    private func key(from uploadTask: UploadTask) -> String? {
+        return awsCredential?.permission.uploadPath.appending(uploadTask.path)
     }
     
     //MARK: - API
@@ -150,18 +150,19 @@ class AWSClient {
         let uploadExpression = AWSS3TransferUtilityUploadExpression()
         uploadExpression.progressBlock = self.progressBlock
         
-        guard let awsCredential = Beamer.shared.awsCredential,
-            let transferUtility = self.transferUtility else {
+        guard let awsCredential = self.awsCredential,
+            let transferUtility = self.transferUtility,
+            let key = self.key(from: uploadTask) else {
             return
         }
         
-        let key = awsCredential.permission.uploadPath.appending(uploadTask.file.fileExtension)
+        let contentType = uploadTask.file.contentTypeStringRepresentation()
         
         transferUtility.uploadData(
             uploadTask.file.data,
             bucket: awsCredential.permission.bucketName,
             key: key,
-            contentType: "image/png",
+            contentType: contentType,
             expression: uploadExpression,
             completionHandler: self.uploadCompletionBlock)
             .continueWith { (task) -> Any? in
@@ -172,7 +173,7 @@ class AWSClient {
                         }
                         
                         delegate.awsClient(self,
-                                           didUploadFailFor: uploadTask.file,
+                                           didFailUpload: uploadTask.file,
                                            error: error)
                     }
                     
@@ -192,7 +193,7 @@ class AWSClient {
         
         transferUtility.enumerateToAssignBlocks(
             forUploadTask: { (task, uploadProgressBlockReference, completionHandlerReference) in
-                if task.taskIdentifier == uploadTask.identifier {
+                if task.key == self.key(from: uploadTask) {
                     task.cancel()
                     self.uploadTasks.remove(at: self.indexOf(uploadTask: uploadTask))
                     
@@ -241,7 +242,11 @@ class AWSClient {
     }
     
     private func releaseTransferUtility() {
-        AWSS3TransferUtility.remove(forKey: self.registrationKey)
+        guard let registrationKey = self.registrationKey else {
+            return
+        }
+        
+        AWSS3TransferUtility.remove(forKey: registrationKey)
         
         transferUtility = nil
     }
