@@ -78,3 +78,10 @@ public struct UploadableFile: Codable {
         }
     }
 }
+
+//MARK: - Equatable
+extension UploadableFile: Equatable {
+    public static func == (lhs: UploadableFile, rhs: UploadableFile) -> Bool {
+        return lhs.identifier == rhs.identifier
+    }
+}

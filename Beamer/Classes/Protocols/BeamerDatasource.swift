@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol BeamerDatasource: class {
-    func registrationKey(_ beamer: Beamer) -> String
+    func beamerRegistrationKey(_ beamer: Beamer) -> String
     func beamer(_ beamer: Beamer,
                 handleWithInvalidCredential completion: ((AWSCredential)->Void)?)
 }

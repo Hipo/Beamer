@@ -29,3 +29,9 @@ class UploadTask: Codable {
     //MARK: - API
     
 }
+
+extension UploadTask: Equatable {
+    static func == (lhs: UploadTask, rhs: UploadTask) -> Bool {
+        return lhs.identifier == rhs.identifier
+    }
+}

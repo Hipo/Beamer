@@ -10,8 +10,11 @@ protocol AWSClientDelegate: class {
                    didCompleteUpload uploadFile: UploadableFile)
     func awsClient(_ awsClient: AWSClient,
                    didFailUpload uploadFile: UploadableFile,
-                   error: Error)
+                   error: BeamerError)
     func awsClient(_ awsClient: AWSClient,
                    didUpdateProgress uploadFile: UploadableFile,
                    progress: Float)
+    func awsClient(_ awsClient: AWSClient,
+                   didCancel uploadFile: UploadableFile)
+    func awsClientInvalidate(_ awsClient: AWSClient)
 }

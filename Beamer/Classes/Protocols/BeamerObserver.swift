@@ -17,5 +17,5 @@ public protocol BeamerObserver: class {
                 didFinish uploadFile: UploadableFile)
     func beamer(_ beamer: Beamer,
                 didFail uploadFile: UploadableFile,
-                error: Error)
+                error: BeamerError)
 }

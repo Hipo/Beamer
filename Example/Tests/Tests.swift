@@ -1,5 +1,4 @@
 import XCTest
-import Beamer
 
 class Tests: XCTestCase {
     

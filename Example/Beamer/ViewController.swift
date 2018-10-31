@@ -66,16 +66,16 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
 
 
 extension ViewController: BeamerObserver {
+    func beamer(_ beamer: Beamer, didFail uploadFile: UploadableFile, error: BeamerError) {
+        print("didFail \(error)")
+    }
+    
     func beamer(_ beamer: Beamer, didStart uploadFile: UploadableFile) {
         print("didStart")
     }
     
     func beamer(_ beamer: Beamer, didFinish uploadFile: UploadableFile) {
         print("didFinish")
-    }
-    
-    func beamer(_ beamer: Beamer, didFail uploadFile: UploadableFile, error: Error) {
-        print("didFail \(error)")
     }
     
     func beamer(_ beamer: Beamer, didUpdate progress: Float, uploadFile: UploadableFile) {

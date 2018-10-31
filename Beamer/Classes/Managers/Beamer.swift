@@ -44,7 +44,7 @@ public class Beamer: NSObject {
         
         awsClient?.delegate = self
         
-        let registrationKey = dataSource.registrationKey(self)
+        let registrationKey = dataSource.beamerRegistrationKey(self)
         awsClient?.registrationKey = registrationKey
     }
     
@@ -128,8 +128,10 @@ public class Beamer: NSObject {
         }
     }
     
-    //MARK: - API
-    
+}
+
+//MARK: - API
+extension Beamer {
     public func application(_ application: UIApplication,
                             handleEventsForBackgroundURLSession identifier: String,
                             completionHandler: @escaping () -> Void) {
@@ -169,8 +171,6 @@ public class Beamer: NSObject {
     public func resetUploads() {
         //TODO
     }
-
-    
 }
 
 //MARK: - Observer
@@ -200,8 +200,24 @@ extension Beamer {
 
 //MARK: - AWSClientDelegate
 extension Beamer: AWSClientDelegate {
+    func awsClientInvalidate(_ awsClient: AWSClient) {
+        tasks.removeAll()
+        executeBlockOnObservers { (observer) in
+            for task in self.tasks {
+                observer.beamer(self,
+                                didFail: task.file,
+                                error: .userCancelled)
+            }
+        }
+    }
+    
     func awsClient(_ awsClient: AWSClient,
                    didCompleteUpload uploadFile: UploadableFile) {
+        if let index = self.index(of: uploadFile) {
+            tasks.remove(at: index)
+        }
+        saveUploadTasks()
+        
         executeBlockOnObservers { (observer) in
             observer.beamer(self,
                             didFinish: uploadFile)
@@ -209,7 +225,7 @@ extension Beamer: AWSClientDelegate {
     }
     func awsClient(_ awsClient: AWSClient,
                    didFailUpload uploadFile: UploadableFile,
-                   error: Error) {
+                   error: BeamerError) {
         executeBlockOnObservers { (observer) in
             observer.beamer(self,
                             didFail: uploadFile,
@@ -225,5 +241,26 @@ extension Beamer: AWSClientDelegate {
                             didUpdate: progress,
                             uploadFile: uploadFile)
         }
+    }
+    
+    func awsClient(_ awsClient: AWSClient,
+                   didCancel uploadFile: UploadableFile) {
+        executeBlockOnObservers { (observer) in
+            observer.beamer(self,
+                            didFail: uploadFile,
+                            error: .userCancelled)
+        }
+    }
+}
+
+//MARK: - Helpers
+extension Beamer {
+    fileprivate func index(of uploadableFile: UploadableFile) -> Int? {
+        for (index, task) in tasks.enumerated() {
+            if task.file == uploadableFile {
+                return index
+            }
+        }
+        return nil
     }
 }
