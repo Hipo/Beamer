@@ -12,6 +12,7 @@ public enum BeamerState {
     case ready
     case running
     case suspended
+    case notReady
 }
 
 struct Observation {
@@ -19,30 +20,34 @@ struct Observation {
 }
 
 public class Beamer: NSObject {
-    private(set) var state: BeamerState
+    private(set) var state: BeamerState = .notReady
     private var observations = [ObjectIdentifier: Observation]()
-    private var tasks: [UploadTask] = []
+    private(set) fileprivate var tasks: [UploadTask] = []
     private var awsClient: AWSClient?
     
     var awsCredential: AWSCredential?
-    weak var dataSource: BeamerDatasource?
+    public weak var dataSource: BeamerDataSource?
     
     public init(awsCredential: AWSCredential? = nil) {
-        guard let dataSource = self.dataSource else {
-            fatalError("Datasource should be provided to use Beamer!")
-        }
-        
         state = .ready
         
         super.init()
         
-        guard let credential = awsCredential else {
+        self.awsCredential = awsCredential
+        
+        commonInit()
+    }
+    
+    private func commonInit() {
+        guard let dataSource = self.dataSource,
+            let credential = awsCredential else {
             return
         }
         
         awsClient = AWSClient(awsCredential: credential)
         
         awsClient?.delegate = self
+        awsClient?.dataSource = self
         
         let registrationKey = dataSource.beamerRegistrationKey(self)
         awsClient?.registrationKey = registrationKey
@@ -62,10 +67,17 @@ public class Beamer: NSObject {
         }
 
         state = .running
+        
+        tasks = loadUploadTasks()
+        
+        for task in tasks {
+            awsClient?.uploadTask(task)
+        }
     }
     
     private func retry() {
-        
+        state = .running
+        start()
     }
     
     private func saveUploadTasks() {
@@ -148,7 +160,10 @@ extension Beamer {
         
         self.awsCredential = awsCredential
         
+        commonInit()
+        
         self.start()
+        
     }
     
     public func register() {
@@ -166,6 +181,8 @@ extension Beamer {
         tasks.append(uploadTask)
         
         awsClient?.uploadTask(uploadTask)
+        
+        saveUploadTasks()
     }
     
     public func resetUploads() {
@@ -250,6 +267,13 @@ extension Beamer: AWSClientDelegate {
                             didFail: uploadFile,
                             error: .userCancelled)
         }
+    }
+}
+
+//MARK: - AWSClientDataSource
+extension Beamer: AWSClientDataSource {
+    func awsClientUploadTasks(_ awsClient: AWSClient) -> [UploadTask] {
+        return tasks
     }
 }
 

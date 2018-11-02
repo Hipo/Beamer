@@ -198,7 +198,7 @@ extension AWSClient {
     }
     
     private func key(from uploadTask: UploadTask) -> String? {
-        return awsCredential?.permission.uploadPath.appending(uploadTask.path)
+        return awsCredential?.permission.uploadPath.appending(uploadTask.file.identifier)
     }
 }
 

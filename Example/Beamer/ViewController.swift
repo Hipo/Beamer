@@ -12,10 +12,14 @@ import Beamer
 class ViewController: UIViewController {
     private var imagePickerController: UIImagePickerController?
     
-    private var beamer: Beamer = Beamer(awsCredential: nil)
+    private let beamer: Beamer = {
+        return AppDelegate.beamer
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        beamer.dataSource = self
         
         beamer.addObserver(self)
         
@@ -81,4 +85,16 @@ extension ViewController: BeamerObserver {
     func beamer(_ beamer: Beamer, didUpdate progress: Float, uploadFile: UploadableFile) {
         print("didUpdate progress: \(progress)")
     }
+}
+
+extension ViewController: BeamerDataSource {
+    func beamerRegistrationKey(_ beamer: Beamer) -> String {
+        return "1613"
+    }
+    
+    func beamer(_ beamer: Beamer, handleWithInvalidCredential completion: ((AWSCredential) -> Void)?) {
+        
+    }
+    
+    
 }
