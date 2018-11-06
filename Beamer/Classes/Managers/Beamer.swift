@@ -105,7 +105,7 @@ public class Beamer: NSObject {
         }
         
         do {
-            let data = uploadTask.file.data
+            let data = uploadTask.uploadable.file.data
             try data.write(to: savePath, options: [])
         } catch {
             fatalError(error.localizedDescription)
@@ -114,11 +114,11 @@ public class Beamer: NSObject {
     }
     
     private func savePath(forUploadTask uploadTask: UploadTask) -> URL? {
-        return FileManager.default.fileUrl(with: uploadTask.file.identifier)
+        return FileManager.default.fileUrl(with: uploadTask.uploadable.identifier)
     }
     
-    private func savePath(forUploadableFile uploadableFile: UploadableFile) -> URL? {
-        return FileManager.default.fileUrl(with: uploadableFile.identifier)
+    private func savePath(forUploadable uploadable: Uploadable) -> URL? {
+        return FileManager.default.fileUrl(with: uploadable.identifier)
     }
     
     private func loadUploadTasks() -> [UploadTask] {
@@ -136,7 +136,7 @@ public class Beamer: NSObject {
             
             return uploadTasks
         } catch {
-            fatalError(error.localizedDescription)
+            return []
         }
     }
     
@@ -170,12 +170,12 @@ extension Beamer {
         self.start()
     }
     
-    public func add(uploadableFile: UploadableFile) {
-        guard let savePath = self.savePath(forUploadableFile: uploadableFile) else {
+    public func add(uploadable: Uploadable) {
+        guard let savePath = self.savePath(forUploadable: uploadable) else {
             return
         }
         
-        let uploadTask = UploadTask(file: uploadableFile,
+        let uploadTask = UploadTask(uploadable: uploadable,
                                     path: savePath.absoluteString)
         
         tasks.append(uploadTask)
@@ -186,7 +186,65 @@ extension Beamer {
     }
     
     public func resetUploads() {
-        //TODO
+        awsClient?.invalidate()
+    }
+    
+    public func numberOfActiveUploads() -> Int {
+        return tasks.filter({ (task) -> Bool in
+            return task.state == .ready || task.state == .running
+        }).count
+    }
+    
+    public func uploadable(at index: Int) -> Uploadable? {
+        guard tasks.count > index else {
+            return nil
+        }
+        
+        let uploadTask = tasks[index]
+        return uploadTask.uploadable
+    }
+    
+    public func index(of uploadable: Uploadable) -> Int {
+        guard tasks.count > 0 else {
+            return -1
+        }
+        
+        for (index, task) in tasks.enumerated() {
+            if task.uploadable == uploadable {
+                return index
+            }
+        }
+        
+        return -1
+    }
+    
+    public func stop(uploadable: Uploadable) {
+        guard let uploadTask = self.uploadTask(from: uploadable) else {
+            return
+        }
+        awsClient?.stop(uploadTask: uploadTask)
+    }
+    
+    public func cancel(uploadable: Uploadable) {
+        guard let uploadTask = self.uploadTask(from: uploadable) else {
+            return
+        }
+        awsClient?.cancel(uploadTask: uploadTask)
+    }
+    
+    public func retry(uploadable: Uploadable) {
+        guard let uploadTask = self.uploadTask(from: uploadable) else {
+            return
+        }
+        awsClient?.retry(uploadTask: uploadTask)
+    }
+}
+
+extension Beamer {
+    fileprivate func uploadTask(from uploadable: Uploadable) -> UploadTask? {
+        return tasks.filter { (task) -> Bool in
+            return task.uploadable == uploadable
+        }.first
     }
 }
 
@@ -219,39 +277,44 @@ extension Beamer {
 extension Beamer: AWSClientDelegate {
     func awsClientInvalidate(_ awsClient: AWSClient) {
         tasks.removeAll()
-        executeBlockOnObservers { (observer) in
-            for task in self.tasks {
-                observer.beamer(self,
-                                didFail: task.file,
-                                error: .userCancelled)
-            }
-        }
     }
     
     func awsClient(_ awsClient: AWSClient,
-                   didCompleteUpload uploadFile: UploadableFile) {
-        if let index = self.index(of: uploadFile) {
-            tasks.remove(at: index)
+                   didCompleteUpload uploadFile: Uploadable) {
+        let index = self.index(of: uploadFile)
+        
+        if index == -1 {
+            return
         }
+        
+        tasks.remove(at: index)
         saveUploadTasks()
         
         executeBlockOnObservers { (observer) in
             observer.beamer(self,
-                            didFinish: uploadFile)
+                            didFinish: uploadFile,
+                            at: index)
         }
     }
     func awsClient(_ awsClient: AWSClient,
-                   didFailUpload uploadFile: UploadableFile,
+                   didFailUpload uploadFile: Uploadable,
                    error: BeamerError) {
+        let index = self.index(of: uploadFile)
+        
+        if index == -1 {
+            return
+        }
+        
         executeBlockOnObservers { (observer) in
             observer.beamer(self,
                             didFail: uploadFile,
+                            at: index,
                             error: error)
         }
     }
     
     func awsClient(_ awsClient: AWSClient,
-                   didUpdateProgress uploadFile: UploadableFile,
+                   didUpdateProgress uploadFile: Uploadable,
                    progress: Float) {
         executeBlockOnObservers { (observer) in
             observer.beamer(self,
@@ -261,11 +324,44 @@ extension Beamer: AWSClientDelegate {
     }
     
     func awsClient(_ awsClient: AWSClient,
-                   didCancel uploadFile: UploadableFile) {
+                   didCancel uploadFile: Uploadable) {
+        let index = self.index(of: uploadFile)
+        
+        if index == -1 {
+            return
+        }
+        
+        tasks.remove(at: index)
+        saveUploadTasks()
+        
         executeBlockOnObservers { (observer) in
             observer.beamer(self,
                             didFail: uploadFile,
+                            at: index,
                             error: .userCancelled)
+        }
+    }
+    
+    func awsClient(_ awsClient: AWSClient,
+                   didStop uploadFile: Uploadable) {
+        let index = self.index(of: uploadFile)
+        
+        if index == -1 {
+            return
+        }
+        
+        executeBlockOnObservers { (observer) in
+            observer.beamer(self,
+                            didStop: uploadFile,
+                            at: index)
+        }
+    }
+    
+    func awsClient(_ awsClient: AWSClient,
+                   didStartUpload uploadFile: Uploadable) {
+        executeBlockOnObservers { (observer) in
+            observer.beamer(self,
+                            didStart: uploadFile)
         }
     }
 }
@@ -274,17 +370,5 @@ extension Beamer: AWSClientDelegate {
 extension Beamer: AWSClientDataSource {
     func awsClientUploadTasks(_ awsClient: AWSClient) -> [UploadTask] {
         return tasks
-    }
-}
-
-//MARK: - Helpers
-extension Beamer {
-    fileprivate func index(of uploadableFile: UploadableFile) -> Int? {
-        for (index, task) in tasks.enumerated() {
-            if task.file == uploadableFile {
-                return index
-            }
-        }
-        return nil
     }
 }

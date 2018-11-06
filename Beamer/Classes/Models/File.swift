@@ -1,8 +1,8 @@
 //
-//  UploadableFile.swift
+//  File.swift
 //  Beamer
 //
-//  Created by Omer Emre Aslan on 6.09.2018.
+//  Created by Omer Emre Aslan on 5.11.2018.
 //
 
 public enum ContentType: Codable {
@@ -53,35 +53,12 @@ public enum ContentType: Codable {
     case custom(contentType: String)
 }
 
-public struct UploadableFile: Codable {
-    let identifier: String
-    let data: Data
+public struct File: Codable {
     let contentType: ContentType
-    var credential: AWSCredential?
+    let data: Data
     
-    public init(identifier: String,
-                data: Data,
-                contentType: ContentType) {
-        self.identifier = identifier
+    public init(data: Data, contentType: ContentType) {
         self.data = data
         self.contentType = contentType
-    }
-    
-    public func contentTypeStringRepresentation() -> String {
-        switch contentType {
-        case .image(let type):
-            return "image/\(type)"
-        case .video(let type):
-            return "video/\(type)"
-        case .custom(let contentType):
-            return contentType
-        }
-    }
-}
-
-//MARK: - Equatable
-extension UploadableFile: Equatable {
-    public static func == (lhs: UploadableFile, rhs: UploadableFile) -> Bool {
-        return lhs.identifier == rhs.identifier
     }
 }

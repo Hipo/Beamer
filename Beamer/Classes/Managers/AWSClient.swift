@@ -31,9 +31,11 @@ class AWSClient {
                 return
             }
             
+            uploadTask.uploadable.progress = progress
+            
             DispatchQueue.main.async {
                 delegate.awsClient(self,
-                                   didUpdateProgress: uploadTask.file,
+                                   didUpdateProgress: uploadTask.uploadable,
                                    progress: progress)
             }
         }
@@ -52,14 +54,14 @@ class AWSClient {
             
             guard let error = error else {
                 delegate.awsClient(self,
-                                   didCompleteUpload: uploadTask.file)
+                                   didCompleteUpload: uploadTask.uploadable)
                 return
             }
             
             let beamerError = BeamerError.unknown(message: error.localizedDescription)
             
             delegate.awsClient(self,
-                               didFailUpload: uploadTask.file,
+                               didFailUpload: uploadTask.uploadable,
                                error: beamerError)
         }
     }
@@ -106,10 +108,17 @@ extension AWSClient {
                 return
         }
         
-        let contentType = uploadTask.file.contentTypeStringRepresentation()
+        let contentType = uploadTask.uploadable.contentTypeStringRepresentation()
+        
+        print("https://\(awsCredential.permission.bucketName).s3.amazonaws.com/\(key)")
+        
+        if let delegate = self.delegate {
+            delegate.awsClient(self,
+                               didStartUpload: uploadTask.uploadable)
+        }
         
         transferUtility.uploadData(
-            uploadTask.file.data,
+            uploadTask.uploadable.file.data,
             bucket: awsCredential.permission.bucketName,
             key: key,
             contentType: contentType,
@@ -125,7 +134,7 @@ extension AWSClient {
                         let beamerError = BeamerError.unknown(message: error.localizedDescription)
                         
                         delegate.awsClient(self,
-                                           didFailUpload: uploadTask.file,
+                                           didFailUpload: uploadTask.uploadable,
                                            error: beamerError)
                     }
                     
@@ -198,7 +207,7 @@ extension AWSClient {
     }
     
     private func key(from uploadTask: UploadTask) -> String? {
-        return awsCredential?.permission.uploadPath.appending(uploadTask.file.identifier)
+        return awsCredential?.permission.uploadPath.appending(uploadTask.uploadable.identifier)
     }
 }
 
@@ -244,7 +253,42 @@ extension AWSClient {
                     }
                     
                     delegate.awsClient(self,
-                                       didCancel: uploadTask.file)
+                                       didCancel: uploadTask.uploadable)
+                    return
+                }
+        }, downloadTask: nil)
+    }
+    
+    func stop(uploadTask: UploadTask) {
+        guard let transferUtility = self.transferUtility else {
+            return
+        }
+        
+        transferUtility.enumerateToAssignBlocks(
+            forUploadTask: { (task, uploadProgressBlockReference, completionHandlerReference) in
+                if task.key == self.key(from: uploadTask) {
+                    task.suspend()
+                    
+                    guard let delegate = self.delegate else {
+                        return
+                    }
+                    
+                    delegate.awsClient(self,
+                                       didStop: uploadTask.uploadable)
+                    return
+                }
+        }, downloadTask: nil)
+    }
+    
+    func retry(uploadTask: UploadTask) {
+        guard let transferUtility = self.transferUtility else {
+            return
+        }
+        
+        transferUtility.enumerateToAssignBlocks(
+            forUploadTask: { (task, uploadProgressBlockReference, completionHandlerReference) in
+                if task.key == self.key(from: uploadTask) {
+                    task.resume()
                     return
                 }
         }, downloadTask: nil)

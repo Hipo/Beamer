@@ -7,22 +7,22 @@
 
 import Foundation
 
+enum UploadTaskState: String, Codable {
+    case ready
+    case running
+    case failed
+    case completed
+}
+
 class UploadTask: Codable {
-    enum State: String, Codable {
-        case ready
-        case running
-        case failed
-        case completed
-    }
-    
-    let file: UploadableFile
-    var state: State = .ready
+    let uploadable: Uploadable
+    var state: UploadTaskState = .ready
     let path: String
     var credential: AWSCredential?
     var identifier: Int?
     
-    init(file: UploadableFile, path: String) {
-        self.file = file
+    init(uploadable: Uploadable, path: String) {
+        self.uploadable = uploadable
         self.path = path
     }
     

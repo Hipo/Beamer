@@ -5,11 +5,13 @@ PODS:
     - AWSCore (= 2.6.25)
   - Beamer (0.1.0):
     - AWSS3
+  - SnapKit (4.2.0)
   - SwiftyJSON (4.2.0)
 
 DEPENDENCIES:
   - Alamofire
   - Beamer (from `../`)
+  - SnapKit
   - SwiftyJSON
 
 SPEC REPOS:
@@ -17,6 +19,7 @@ SPEC REPOS:
     - Alamofire
     - AWSCore
     - AWSS3
+    - SnapKit
     - SwiftyJSON
 
 EXTERNAL SOURCES:
@@ -28,8 +31,9 @@ SPEC CHECKSUMS:
   AWSCore: 93ac57c361f6ff9c0749adf9404c4a1a1ecdaa2b
   AWSS3: 0614ff4e0f0d11942322b5a15c30927a93fe35db
   Beamer: 8d971ae27109f169db84233214a3252d25d122af
+  SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
   SwiftyJSON: c4bcba26dd9ec7a027fc8eade48e2c911f229e96
 
-PODFILE CHECKSUM: 150dfc251092d8ad12edd031c4c2d2a9fb5b5a5b
+PODFILE CHECKSUM: 57925fd7c2b9167d225e85d44182f4c5ecfc1467
 
 COCOAPODS: 1.5.3

@@ -4,6 +4,7 @@ target 'Beamer_Example' do
   pod 'Beamer', :path => '../'
   pod 'Alamofire'
   pod 'SwiftyJSON'
+  pod 'SnapKit'
 
   target 'Beamer_Tests' do
     inherit! :search_paths
