@@ -238,6 +238,16 @@ extension Beamer {
         }
         awsClient?.retry(uploadTask: uploadTask)
     }
+    
+    public func uploadPath(for uploadable: Uploadable) -> String? {
+        guard let awsCredential = self.awsCredential else {
+            return nil
+        }
+        
+        let key = awsCredential.permission.uploadPath.appending(uploadable.identifier)
+        
+        return "https://\(awsCredential.permission.bucketName).s3.amazonaws.com/\(key)"
+    }
 }
 
 extension Beamer {

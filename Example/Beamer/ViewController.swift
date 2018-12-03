@@ -10,6 +10,7 @@ import UIKit
 import Beamer
 
 class ViewController: UIViewController {
+    var uploadedImages: [UploadedImage] = []
     private var imagePickerController: UIImagePickerController?
     
     private let beamer: Beamer = {
@@ -27,12 +28,26 @@ class ViewController: UIViewController {
     }()
     
     private lazy var pickImageButton: UIButton = {
-        let pickImageButton = UIButton(type: UIButtonType.system)
-        pickImageButton.setTitle("Pick image", for: .normal)
-        pickImageButton.addTarget(self,
-                                  action: #selector(tapPickImage(sender:)),
-                                  for: .touchUpInside)
-        return pickImageButton
+        let button = UIButton(type: UIButtonType.system)
+        button.setTitle("Pick image", for: .normal)
+        button.addTarget(self,
+                         action: #selector(tapPickImage(sender:)),
+                         for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var uploadedImageButton: UIButton = {
+        let button = UIButton(type: UIButtonType.system)
+        button.setTitle("Uploaded Images", for: .normal)
+        button.addTarget(self,
+                         action: #selector(tapUploadedImage(sender:)),
+                         for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var uploadedImageViewController: UploadedImageListViewController = {
+        let viewController = UploadedImageListViewController()
+        return viewController
     }()
 
     override func viewDidLoad() {
@@ -61,8 +76,16 @@ class ViewController: UIViewController {
         view.addSubview(pickImageButton)
         pickImageButton.snp.makeConstraints { (maker) in
             maker.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
-            maker.centerX.equalToSuperview()
-            maker.height.equalTo(30)
+            maker.leading.equalToSuperview()
+            maker.height.equalTo(50)
+        }
+        
+        view.addSubview(uploadedImageButton)
+        uploadedImageButton.snp.makeConstraints { (maker) in
+            maker.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+            maker.trailing.equalToSuperview()
+            maker.leading.equalTo(pickImageButton.snp.trailing)
+            maker.width.height.equalTo(pickImageButton)
         }
         
         view.addSubview(tableView)
@@ -73,7 +96,8 @@ class ViewController: UIViewController {
         }
     }
     
-    @objc func tapPickImage(sender: UIButton) {
+    @objc
+    private func tapPickImage(sender: UIButton) {
         guard let imagePickerController = self.imagePickerController else {
             return
         }
@@ -81,6 +105,17 @@ class ViewController: UIViewController {
         present(imagePickerController,
                 animated: true,
                 completion: nil)
+    }
+    
+    @objc
+    private func tapUploadedImage(sender: UIButton) {
+        uploadedImageViewController = UploadedImageListViewController()
+        
+        uploadedImageViewController.beamer = self.beamer
+        uploadedImageViewController.images = uploadedImages
+        
+        let navigationController = UINavigationController(rootViewController: uploadedImageViewController)
+        present(navigationController, animated: true, completion: nil)
     }
     
     func uniqueIdentifier() -> String {
@@ -153,6 +188,8 @@ extension ViewController: BeamerObserver {
             self.tableView.deleteRows(at: [indexPath],
                                       with: .automatic)
         }
+        
+        uploadedImages.append(UploadedImage(uploadFile, Date()))
     }
     
     func beamer(_ beamer: Beamer,
