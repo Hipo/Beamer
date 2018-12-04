@@ -10,6 +10,7 @@
 		174B82F22166226F00012DF2 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 174B82F12166226F00012DF2 /* NetworkManager.swift */; };
 		175B0AF421B672BB00ACFD0A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175B0AF321B672BB00ACFD0A /* Constants.swift */; };
 		17970FF521903A6000F92DD3 /* UploadCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17970FF421903A6000F92DD3 /* UploadCell.swift */; };
+		17C1AE2421B68644001E3198 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 17C1AE2321B68644001E3198 /* GoogleService-Info.plist */; };
 		17F1BE6921B5829100B0A1F4 /* UploadedImageListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F1BE6821B5829100B0A1F4 /* UploadedImageListViewController.swift */; };
 		17F1BE6B21B58D4E00B0A1F4 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F1BE6A21B58D4E00B0A1F4 /* Date.swift */; };
 		17F1BE6D21B58FA200B0A1F4 /* UploadedImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F1BE6C21B58FA200B0A1F4 /* UploadedImageCell.swift */; };
@@ -38,6 +39,7 @@
 		174B82F12166226F00012DF2 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		175B0AF321B672BB00ACFD0A /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		17970FF421903A6000F92DD3 /* UploadCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadCell.swift; sourceTree = "<group>"; };
+		17C1AE2321B68644001E3198 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		17F1BE6821B5829100B0A1F4 /* UploadedImageListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadedImageListViewController.swift; sourceTree = "<group>"; };
 		17F1BE6A21B58D4E00B0A1F4 /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
 		17F1BE6C21B58FA200B0A1F4 /* UploadedImageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadedImageCell.swift; sourceTree = "<group>"; };
@@ -134,6 +136,7 @@
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
 				607FACD71AFB9204008FA782 /* ViewController.swift */,
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
+				17C1AE2321B68644001E3198 /* GoogleService-Info.plist */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
 				17F1BE6821B5829100B0A1F4 /* UploadedImageListViewController.swift */,
@@ -202,6 +205,7 @@
 				607FACCD1AFB9204008FA782 /* Frameworks */,
 				607FACCE1AFB9204008FA782 /* Resources */,
 				CAA03D8103945908C32A0044 /* [CP] Embed Pods Frameworks */,
+				175B0AF521B682DF00ACFD0A /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -282,6 +286,7 @@
 			files = (
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
+				17C1AE2421B68644001E3198 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -295,6 +300,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		175B0AF521B682DF00ACFD0A /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Fabric/run\"\n";
+		};
 		18F83D35CAB878758B8CBDD9 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -324,8 +347,10 @@
 				"${BUILT_PRODUCTS_DIR}/AWSS3/AWSS3.framework",
 				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 				"${BUILT_PRODUCTS_DIR}/Beamer/Beamer.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${BUILT_PRODUCTS_DIR}/SnapKit/SnapKit.framework",
 				"${BUILT_PRODUCTS_DIR}/SwiftyJSON/SwiftyJSON.framework",
+				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -333,8 +358,10 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSS3.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Beamer.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SnapKit.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftyJSON.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -511,10 +538,11 @@
 			baseConfigurationReference = 25254A84082F8C0FB362DF52 /* Pods-Beamer_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = W9875NV3WF;
 				INFOPLIST_FILE = Beamer/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hipo.beamer;
@@ -534,7 +562,7 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = W9875NV3WF;
 				INFOPLIST_FILE = Beamer/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hipo.beamer;
