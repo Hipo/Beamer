@@ -45,3 +45,4 @@ playground.xcworkspace
 Pods/
 Example/Beamer/Constants.swift
 Example/Beamer/Constants.swift
+Example/GoogleService-Info.plist
