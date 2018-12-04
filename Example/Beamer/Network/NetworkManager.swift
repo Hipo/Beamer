@@ -18,12 +18,12 @@ class NetworkManager {
     func fetchAWSCredential(completionHandler: CompletionHandler) {
         
         let headers = [
-            "Authorization": "***",
+            "Authorization": "Token \(Constants.awsCredentialToken)",
             "Cache-Control": "no-cache"
         ]
         
         Alamofire.request(
-            "***",
+            Constants.awsCredentialUrl,
             method: .get,
             headers: headers).responseJSON { response in
                 guard let data = response.data else {

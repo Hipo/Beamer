@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		174B82F22166226F00012DF2 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 174B82F12166226F00012DF2 /* NetworkManager.swift */; };
+		175B0AF421B672BB00ACFD0A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175B0AF321B672BB00ACFD0A /* Constants.swift */; };
 		17970FF521903A6000F92DD3 /* UploadCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17970FF421903A6000F92DD3 /* UploadCell.swift */; };
 		17F1BE6921B5829100B0A1F4 /* UploadedImageListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F1BE6821B5829100B0A1F4 /* UploadedImageListViewController.swift */; };
 		17F1BE6B21B58D4E00B0A1F4 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F1BE6A21B58D4E00B0A1F4 /* Date.swift */; };
@@ -35,6 +36,7 @@
 		08B221FF99FC841D5260A60C /* Pods_Beamer_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Beamer_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B5E7229CFF5B6AB52BA747A /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		174B82F12166226F00012DF2 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		175B0AF321B672BB00ACFD0A /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		17970FF421903A6000F92DD3 /* UploadCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadCell.swift; sourceTree = "<group>"; };
 		17F1BE6821B5829100B0A1F4 /* UploadedImageListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadedImageListViewController.swift; sourceTree = "<group>"; };
 		17F1BE6A21B58D4E00B0A1F4 /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
@@ -136,6 +138,7 @@
 				607FACD31AFB9204008FA782 /* Supporting Files */,
 				17F1BE6821B5829100B0A1F4 /* UploadedImageListViewController.swift */,
 				17F1BE6A21B58D4E00B0A1F4 /* Date.swift */,
+				175B0AF321B672BB00ACFD0A /* Constants.swift */,
 			);
 			name = "Example for Beamer";
 			path = Beamer;
@@ -370,6 +373,7 @@
 				607FACD81AFB9204008FA782 /* ViewController.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
 				17F1BE6921B5829100B0A1F4 /* UploadedImageListViewController.swift in Sources */,
+				175B0AF421B672BB00ACFD0A /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
